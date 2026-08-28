@@ -11,9 +11,7 @@
     ".": "./index.js"
   },
   "dependencies": {
-    "@electric-sql/pglite": "^0.5.8",
-    "@electric-sql/pglite-pgvector": "^0.0.9",
-    "@huggingface/transformers": "^4.2.0",
+    "ai": "^7.0.83",
     "dotenv": "^17.4.2",
     "pg": "^8.23.0"
   }

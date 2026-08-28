@@ -4,3 +4,7 @@ node_modules/
 .models/
 data/
 .next/
+
+.vercel
+.env*
+!.env.example

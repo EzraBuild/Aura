@@ -1,14 +1,15 @@
 // @aura/core — the memory store. Shared by the MCP server and the web app.
-// Driver: Neon/Postgres via `pg` when DATABASE_URL is set, else embedded PGlite (./data).
+// Driver: Neon Postgres via `pg`. Embeddings via Vercel AI Gateway (see embeddings.js).
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { config } from "dotenv";
 import { createHash, randomBytes } from "node:crypto";
-import { embed, toVectorLiteral, EMBEDDING_DIM } from "./embeddings.js";
-export { embed, EMBEDDING_DIM };
+import { embed, toVectorLiteral, EMBEDDING_DIM, EMBEDDING_MODEL } from "./embeddings.js";
+export { embed, EMBEDDING_DIM, EMBEDDING_MODEL };
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 config({ path: path.join(HERE, "..", ".env"), quiet: true });
+config({ path: path.join(HERE, "..", ".env.local"), quiet: true }); // VERCEL_OIDC_TOKEN from `vercel env pull`
 
 // Single local user until auth (Step 2). user_id is text to match Better Auth's ids.
 export const LOCAL_USER_ID = "local-user";
@@ -17,17 +18,9 @@ let driver; // { query(sql, params) -> { rows, rowCount }, close() }
 
 export async function getDb() {
   if (driver) return driver;
-  if (process.env.DATABASE_URL) {
-    const { default: pg } = await import("pg");
-    const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 3 });
-    driver = { kind: "neon", query: (sql, params) => pool.query(sql, params), exec: (sql) => pool.query(sql), close: () => pool.end() };
-  } else {
-    const { PGlite } = await import("@electric-sql/pglite");
-    const { vector } = await import("@electric-sql/pglite-pgvector");
-    const dir = path.join(HERE, "..", "data");
-    const db = new PGlite(dir, { extensions: { vector } });
-    driver = { kind: "pglite", query: async (s, p) => { const r = await db.query(s, p); return { rows: r.rows, rowCount: r.affectedRows ?? r.rows.length }; }, exec: (s) => db.exec(s), close: () => db.close() };
-  }
+  const { default: pg } = await import("pg");
+  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 3 });
+  driver = { kind: "neon", query: (sql, params) => pool.query(sql, params), exec: (sql) => pool.query(sql), close: () => pool.end() };
   await migrate(driver);
   return driver;
 }
