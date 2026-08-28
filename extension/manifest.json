@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Aura — my memory, in any AI",
+  "version": "0.1.0",
+  "description": "Inserts relevant memories from your Aura into web chats that don't speak MCP yet. Right-click any text to remember it.",
+  "permissions": ["storage", "contextMenus", "activeTab"],
+  "host_permissions": ["http://localhost/*", "https://*/*"],
+  "background": { "service_worker": "background.js" },
+  "action": { "default_popup": "popup.html", "default_title": "Aura" },
+  "content_scripts": [
+    {
+      "matches": ["https://chatgpt.com/*", "https://chat.openai.com/*", "https://claude.ai/*", "https://gemini.google.com/*", "https://copilot.microsoft.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
