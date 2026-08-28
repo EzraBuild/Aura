@@ -1,0 +1,11 @@
+{
+  "name": "aura",
+  "private": true,
+  "workspaces": ["core", "mcp-server", "web"],
+  "scripts": {
+    "dev": "npm run dev -w web",
+    "build": "npm run build -w web",
+    "mcp": "npm start -w mcp-server",
+    "test": "npm test -w mcp-server"
+  }
+}
